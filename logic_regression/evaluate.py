@@ -1,28 +1,31 @@
 import os
 import csv
+import logging
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from logic_regression.model import ImdbDataset, LogicRgeressionModel, asset_dir
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 
 embedding_dim = 8
 
 device = torch.device("mps" if torch.mps.is_available() else "cpu")
-print(f"working on {device}")
+logging.info(f"working on {device}")
 
 res = []
 res.append(["epoch\\w"] + [epoch for epoch in range(4, 65, 4)])
 
 for max_length in [16, 32, 64, 128, 256]:
-    print(f"loading train dataset, max_length={max_length}")
+    logging.info(f"loading train dataset, max_length={max_length}")
     train_ds = ImdbDataset(max_length, True)
     train_dl = DataLoader(
         dataset=train_ds, batch_size=128, shuffle=True, drop_last=True
     )
 
-    print(f"loading test dataset, max_length={max_length}")
+    logging.info(f"loading test dataset, max_length={max_length}")
     test_ds = ImdbDataset(
         max_length,
         False,
@@ -60,7 +63,7 @@ for max_length in [16, 32, 64, 128, 256]:
                     total += test_labels.size(0)
                     correct += (predicted == test_labels).sum().item()
                 accuracy = f"{(correct / total * 100):.2f}"
-                print(f"max_length={max_length}, epoch={epoch}, accuracy={accuracy}")
+                logging.info(f"max_length={max_length}, epoch={epoch}, accuracy={accuracy}")
                 epoch_res.append(accuracy)
             model.train()
     res.append(epoch_res)

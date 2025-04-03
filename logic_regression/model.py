@@ -24,6 +24,7 @@ class LogicRgeressionModel(nn.Module):
 asset_dir = os.path.join("./", "assets/")
 os.makedirs(asset_dir, exist_ok=True)
 
+model_save_path = os.path.join(asset_dir, "model.pth")
 tokenizer_path = os.path.join(asset_dir, "tokenizer.json")
 project_dir = "../"
 imdb_dataset_dir = os.path.join(project_dir, "dataset/aclImdb/")

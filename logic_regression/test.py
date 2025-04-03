@@ -1,27 +1,27 @@
-import os
+import logging
 import torch
 from torch.utils.data import DataLoader
+from logic_regression.model import ImdbDataset, LogicRgeressionModel, model_save_path
 
-from logic_regression.model import ImdbDataset, LogicRgeressionModel
-
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 device = torch.device("mps" if torch.mps.is_available() else "mps")
-print(f"working on {device}")
-
-ds = ImdbDataset(256, False)
-dl = DataLoader(dataset=ds, batch_size=128)
+logging.info(f"working on {device}")
 
 model = LogicRgeressionModel(32768, 8, 256).to(device)
-checkpoint = torch.load("model.pth")
+checkpoint = torch.load(model_save_path)
+
 model.load_state_dict(checkpoint["model_state_dict"])
 model.eval()
+
+data_loader = DataLoader(dataset=ImdbDataset(256, False), batch_size=128)
 
 correct = 0
 total = 0
 
-print("Testing the model...")
+logging.info("Testing the model...")
 with torch.no_grad():
-    for inputs, labels in dl:
+    for inputs, labels in data_loader:
         inputs, labels = inputs.to(device), labels.to(device)
         outputs = model(inputs)
         predicted = (outputs.squeeze() > 0.5).float()
@@ -29,4 +29,5 @@ with torch.no_grad():
         correct += (predicted == labels).sum().item()
 
 accuracy = correct / total
-print(f"Test Accuracy: {accuracy:.4f}")
+
+logging.info(f"Test Accuracy: {accuracy:.4f}")
